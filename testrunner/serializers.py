@@ -30,6 +30,6 @@ class TestRunSerialiazer(serializers.Serializer):
         instance.name = validated_data.get('name', instance.name)
         instance.description = validated_data.get('description', \
             instance.description)
-        # TODO add ability 
+        # TODO add ability to update and change attached tests.
         instance.save()
         return instance
