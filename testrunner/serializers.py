@@ -1,18 +1,20 @@
 from rest_framework import serializers
 from testrunner.models import TestRun, RESULT_CHOICES
 
-class TestRunSerialiazer(serializers.Serializer):
+class TestRunSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(required=False, blank=True, max_length=100)
+    name = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        max_length=100)
     description = serializers.CharField(
         required=False,
-        blank=True,
+        allow_blank=True,
         max_length=200
     )
-    last_result = serializers.CharField(
+    last_result = serializers.ChoiceField(
         choices=RESULT_CHOICES,
-        default='Null',
-        max_length=20
+        default='never_run',
     )
 
 
@@ -20,7 +22,7 @@ class TestRunSerialiazer(serializers.Serializer):
         """
         Create and return a new `TestRun` instance, given the validated data.
         """
-        return Snippet.objects.create(**validated_data)
+        return TestRun.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
@@ -31,5 +33,6 @@ class TestRunSerialiazer(serializers.Serializer):
         instance.description = validated_data.get('description', \
             instance.description)
         # TODO add ability to update and change attached tests.
+        # ...more
         instance.save()
         return instance

@@ -13,8 +13,8 @@ RESULT_CHOICES = (
 )
 
 # Create your models here.
-class Environment(models.Model):
-    host = models.CharField(max_length=100)
+class TestEnvironment(models.Model):
+    host = models.CharField(max_length=100, default='localhost')
 
 
 class TestRun(models.Model):
@@ -23,13 +23,14 @@ class TestRun(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
 
-    last_run = models.DateTimeField()
+    last_run = models.DateTimeField(null=True)
     last_result = models.CharField(
         choices=RESULT_CHOICES,
-        max_length=20
+        max_length=20,
+        null=True
     )
 
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, null=True)
     created_on = models.DateTimeField()
     # Tests are linked to TestRun via ForeignKey relationships
 
@@ -44,7 +45,7 @@ class TestRunInstance(models.Model):
         max_length=20
     )
 
-    environment = models.ForeignKey(Environment)
+    environment = models.ForeignKey(TestEnvironment)
 
     created_on = models.DateTimeField()
     executed_on = models.DateTimeField()
@@ -59,7 +60,7 @@ class Template(models.Model):
     pass
 
 
-class Test(models.Model):
+class TestModule(models.Model):
     """ A reference to a file that contains one or more tests and exists
     the specified testing directory. """
     pass
