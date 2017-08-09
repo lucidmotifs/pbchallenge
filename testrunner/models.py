@@ -21,7 +21,12 @@ class TestRun(models.Model):
     """ A model that can be requested to create a testrun instance. """
 
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, null=True)
+
+    """
+    The below attributes should only be set by the system after a
+    TestRunInstance completes
+    """
 
     last_run = models.DateTimeField(null=True)
     last_result = models.CharField(
