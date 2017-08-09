@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -36,7 +38,7 @@ class TestRun(models.Model):
     )
 
     created_by = models.ForeignKey(User, null=True)
-    created_on = models.DateTimeField()
+    created_on = models.DateTimeField(default=datetime.now)
     # Tests are linked to TestRun via ForeignKey relationships
 
 
