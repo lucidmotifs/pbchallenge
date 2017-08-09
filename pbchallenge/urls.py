@@ -20,3 +20,9 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('testrunner.urls')),
 ]
+
+# adds a login for the rest-api pages
+urlpatterns += [
+    url(r'^api-auth/', include('rest_framework.urls',
+                               namespace='rest_framework')),
+]
