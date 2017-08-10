@@ -22,18 +22,20 @@ TestRunner Application
     </div>
   {% endfor %}
 {% endif %}
+
 <h2 id="mdc-dialog-with-list-label" class="mdc-dialog__header__title">
-  Spawn a new TestRun instance.
+  Spawn a new TestRun Instance
 </h2>
+
 <form action="#" method="POST" id="instance-form">
   {% csrf_token %}
-  <ul class="mdc-list mdc-list-dense tr-form-list">
+  <ul class="mdc-list tr-form-list">
 
     <!-- TestRun Selection -->
     <li class='mdc-list-item'>
       <div class="mdc-form-field mdc-form-field--align-end">
         {{ form.testrun|attr:"class:mdc-select" }}
-        <label class="mdc-label" for="{{field.name}}" class="mdc-textfield__label">
+        <label for="{{field.name}}">
           {{ form.testrun.label }}{{ form.label_suffix}}
         </label>
       </div>
@@ -49,20 +51,20 @@ TestRunner Application
     </li>
 
     <!-- Interface Selection -->
-    <li class='mdc-list-item tr-form-list'>
+    <li class='mdc-list-item'>
       <div class="mdc-form-field mdc-form-field--align-end">
         {{ form.interface|attr:"class:mdc-select" }}
-        <label for="{{field.name}}" class="mdc-textfield__label">
+        <label for="{{field.name}}">
           {{ form.interface.label }}{{ form.label_suffix}}
         </label>
       </div>
     </li>
 
     <!-- Environment Selection -->
-    <li class='mdc-list-item tr-form-list'>
+    <li class='mdc-list-item'>
       <div class="mdc-form-field mdc-form-field--align-end">
         {{ form.environment|attr:"class:mdc-select" }}
-        <label for="{{field.name}}" class="mdc-textfield__label">
+        <label for="{{field.name}}">
           {{ form.environment.label }}{{ form.label_suffix}}
         </label>
       </div>
@@ -126,7 +128,7 @@ TestRunner Application
           </select>
           {{ trform.modules.label_tag }}
         </div>
-      </section>      
+      </section>
     </section>
     <footer class="mdc-dialog__footer">
       <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
@@ -138,6 +140,9 @@ TestRunner Application
 {% endblock %}
 
 {% block display %}
+<h2 class="mdc-dialog__header__title">
+  Previous Results
+</h2>
 <ul class="mdc-list bordered-list">
   {% for run in testruns %}
   <li class="mdc-list-item">{{ run.id }} {{ run.testrun.name }}</li>

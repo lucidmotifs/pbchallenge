@@ -47,11 +47,6 @@
         .tr-form-list label {
           min-width: 120px;
         }
-
-        button {
-          min-width: 1px;
-          padding: 0;
-        }
       </style>
   </head>
   <body>
@@ -94,9 +89,10 @@
     </aside>
 
     <main class="mdc-toolbar-fixed-adjust">
-      <section>
+      <section class="tr-section__user">
         <h5>Current User: {{ user }}</h5>
       </section>
+
       <div class="mdc-card tr-form-card">
         <section class="mdc-card__primary">
           {% block content %}
@@ -104,18 +100,15 @@
         </section>
       </div>
 
-      <section>
-        <h2 id="mdc-dialog-with-list-label" class="mdc-dialog__header__title">
-          Previous Results
-        </h2>
+      <div class="mdc-card">
         <section class="mdc-card__primary">
           {% block display %}
           {% endblock %}
         </section>
-      </section>
+      </div>
     </main>
 
-    <!-- Includwe and initialize Google MAterial Design JS components -->
+    <!-- Include and initialize Google MAterial Design JS components -->
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script>window.mdc.autoInit();</script>
     <script>
