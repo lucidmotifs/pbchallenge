@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="mdc-typography">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>TestRunner App</title>
+
+    <!-- Material Design Styles -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+      <style type="text/css">
+        .mdc-temporary-drawer__header {
+          text-transform: uppercase;
+          padding-left: 16px;
+        }
+
+        .bordered-list {
+          /* remove the side padding. we'll be placing it around the item instead. */
+          padding-right: 0;
+          padding-left: 0;
+        }
+        .bordered-list .mdc-list-item {
+          /* Add the list side padding padding to the list item. */
+          padding: 0 16px;
+          /* Add a border around each element. */
+          border: 1px solid rgba(0, 0, 0, .12);
+        }
+        /* Ensure adjacent borders don't collide with one another. */
+        .bordered-list .mdc-list-item:not(:first-child) {
+          border-top: none;
+        }
+
+        .tr-details-card {
+          margin-top: 20px;
+        }
+
+        .tr-form-list {
+          max-width: 428px;
+        }
+
+        .tr-form-list label {
+          min-width: 120px;
+        }
+
+        button {
+          min-width: 1px;
+          padding: 0;
+        }
+      </style>
+  </head>
+  <body>
+    <!-- Simple Header with title -->
+    <header class="mdc-toolbar mdc-toolbar--fixed">
+      <div class="mdc-toolbar__row">
+        <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
+          <span class="menu-show">
+            <a href="#" class="mdc-toolbar__icon--menu mdc-ripple-surface"
+              aria-label="Click to show the navigation menu"
+              aria-controls="testrunner-nav-menu"
+              data-mdc-auto-init="MDCRipple"
+              data-mdc-ripple-is-unbounded>
+              <i class="material-icons">menu</i></a>
+          </span>
+          <span class="mdc-toolbar__title">
+            {% block pagetitle %}{% endblock %}</span>
+        </section>
+      </div>
+    </header>
+
+    <aside class="mdc-temporary-drawer mdc-typography">
+      <nav class="mdc-temporary-drawer__drawer">
+        <header class="mdc-temporary-drawer__header">
+          <div class="mdc-temporary-drawer__header-content">
+            Navigation
+          </div>
+        </header>
+        <nav id="icon-with-text-demo" class="mdc-temporary-drawer__content mdc-list">
+          <a class="mdc-list-item mdc-temporary-drawer--selected" href="#">
+            <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">inbox</i>
+            Create and Run
+          </a>
+          <a class="mdc-list-item" href="#">
+            <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">star</i>
+            Results
+          </a>
+        </nav>
+      </nav>
+    </aside>
+
+    <main class="mdc-toolbar-fixed-adjust">
+      <section>
+        <h5>Current User: {{ user }}</h5>
+      </section>
+      <div class="mdc-card tr-form-card">
+        <section class="mdc-card__primary">
+          {% block content %}
+          {% endblock %}
+        </section>
+      </div>
+
+      <section>
+        <h2 id="mdc-dialog-with-list-label" class="mdc-dialog__header__title">
+          Previous Results
+        </h2>
+        <section class="mdc-card__primary">
+          {% block display %}
+          {% endblock %}
+        </section>
+      </section>
+    </main>
+
+    <!-- Includwe and initialize Google MAterial Design JS components -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script>window.mdc.autoInit();</script>
+    <script>
+      // script to show the navigation drawer
+      let drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-temporary-drawer'));
+      document.querySelector('.menu-show').addEventListener('click', () => drawer.open = true);
+    </script>
+    <script>
+    var dialog = new mdc.dialog.MDCDialog(document.querySelector('#mdc-dialog-with-list'));
+
+    dialog.listen('MDCDialog:accept', function() {
+      console.log('accepted');
+    })
+
+    dialog.listen('MDCDialog:cancel', function() {
+      console.log('canceled');
+    })
+
+    document.querySelector('#tr-form-show').addEventListener('click', function (evt) {
+      dialog.lastFocusedTarget = evt.target;
+      dialog.show();
+    })
+    </script>
+  </body>
+</html>

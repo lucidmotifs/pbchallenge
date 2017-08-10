@@ -6,10 +6,15 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from testrunner import views
 
 urlpatterns = [
-    url(r'^testruns/$', views.TestRunList.as_view()),
-    url(r'^testruns/(?P<pk>[0-9]+)/$', views.TestRunDetail.as_view()),
-    url(r'^users/$', views.UserList.as_view()),
-    url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
+    url(r'^$', views.create_instance),
+    url(r'^api/testruns/$', views.TestRunList.as_view()),
+    url(r'^api/testruns/(?P<pk>[0-9]+)/$', views.TestRunDetail.as_view()),
+    url(r'^api/envs/$', views.TestEnvironmentList.as_view()),
+    url(r'^api/envs/(?P<pk>[0-9]+)/$', views.TestEnvironmentDetail.as_view()),
+    url(r'^api/runs/$', views.TestRunInstanceList.as_view()),
+    url(r'^api/runs/(?P<pk>[0-9]+)/$', views.TestRunInstanceDetail.as_view()),
+    url(r'^api/users/$', views.UserList.as_view()),
+    url(r'^api/users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
+from django.contrib.auth.decorators import login_required
 
 # REST API imports
 from rest_framework import status
@@ -10,20 +11,66 @@ from rest_framework import permissions
 
 # app models
 from testrunner.models import TestRun
+from testrunner.models import TestRunInstance
+from testrunner.models import TestEnvironment
 from django.contrib.auth.models import User
 
 # serializers
 from testrunner.serializers import TestRunSerializer
+from testrunner.serializers import TestRunInstanceSerializer
+from testrunner.serializers import TestEnvironmentSerializer
 from testrunner.serializers import UserSerializer
 
+# forms
+from testrunner.forms import TestRunInstanceForm, TestRunForm
+
+def generate_test_suite_hiearchy(root):
+    """
+    Starting at `root` crawl the filesystem looking for:
+        - directoryies containing files starting with test_
+        - any file beginning with test_
+    """
+
 # views
+@login_required
+def create_instance(request):
+    """
+    Create and run an instance of a TestRun, or create a new TestRun
+    first and then run an instance.
+    """
+    template = 'create_instance.html'
+
+    # create queryset to hold all current testrun instances
+    testruns = TestRunInstance.objects.all()
+
+    if request.method == 'POST':
+        instance_form = TestRunInstanceForm(request.POST)
+
+        if instance_form.is_valid():
+            form = instance_form.save(commit=False)
+            form.requested_by = request.user
+            form.save()
+            # execute testrun instance...
+    else:
+        instance_form = TestRunInstanceForm(label_suffix=':')
+        testrun_form = TestRunForm()
+
+    context = {
+        'form': instance_form,
+        'trform': testrun_form,
+        'testruns': testruns,
+    }
+
+    return render(request, template, context)
+
+
 class TestRunList(APIView):
     """
     List all available test runs, or create a new test run.
     """
 
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
+    serializer_class = TestRunSerializer
 
     def get(self, request, format=None):
         testruns = TestRun.objects.all()
@@ -51,6 +98,7 @@ class TestRunDetail(APIView):
     """
 
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    serializer_class = TestRunSerializer
 
 
     def get_testrun(self, pk):
@@ -86,21 +134,29 @@ class TestRunDetail(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-"""
-If no more logic is required, use this instead:
-...
-class SnippetList(generics.ListCreateAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
+
+class TestEnvironmentList(generics.ListCreateAPIView):
+    queryset = TestEnvironment.objects.all()
+    serializer_class = TestEnvironmentSerializer
+
+
+class TestEnvironmentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TestEnvironment.objects.all()
+    serializer_class = TestEnvironmentSerializer
+
+
+class TestRunInstanceList(generics.ListCreateAPIView):
+    queryset = TestRunInstance.objects.all()
+    serializer_class = TestRunInstanceSerializer
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(requested_by=self.request.user)
 
 
-class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
-"""
+class TestRunInstanceDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TestRunInstance.objects.all()
+    serializer_class = TestRunInstanceSerializer
+
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()

@@ -15,14 +15,22 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.contrib.auth.views import login
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('testrunner.urls')),
 ]
 
-# adds a login for the rest-api pages
+# really rough implementation of the auth system using django admin
+# TEMPLATES
 urlpatterns += [
-    url(r'^api-auth/', include('rest_framework.urls',
-                               namespace='rest_framework')),
+    url(r'^accounts/login/$', login, {'template_name': 'admin/login.html'}),
+    url(r'^accounts/', include('django.contrib.auth.urls')),
+]
+
+# adds a login for the rest api pages
+urlpatterns += [
+    url(r'^api/auth/', include('rest_framework.urls',
+        namespace='rest_framework')),
 ]
