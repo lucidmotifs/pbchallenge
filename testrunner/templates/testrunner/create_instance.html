@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% load widget_tweaks %}
+
+{% block pagetitle %}
+TestRunner Application
+{% endblock %}
+
+{% block errors %}
+
+  <!-- Form Errors -->
+  {% if form.errors %}
+    {% for field in form %}
+      {% for error in field.errors %}
+      <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+      </div>
+      {% endfor %}
+    {% endfor %}
+
+    {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">
+        <strong>{{ error|escape }}</strong>
+    </div>
+    {% endfor %}
+  {% endif %}
+
+{% endblock %}
+
+{% block dotestrun %}
+{% if testrun_current %}
+<section id="test-execution-section">
+  <h3 class="mdc-typography--headline">
+    Running Test Run: {{ testrun_current.testrun.name }}
+  </h3>
+
+  <button class="mdc-fab material-icons" aria-label="Execute" data-mdc-auto-init="MDCRipple" id="test-exec-start">
+    <span class="mdc-fab__icon">
+      play_circle_outline
+    </span>
+  </button>
+
+  <!-- hidden form for handling AJAX submission to test executor -->
+  <form action="#" method="POST" id="test-exec-form">
+    <input type="text" id="id_test-module" name="test-module" value="{{ first_module }}">
+  </form>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if form %}
+<!-- Form Section -->
+<h2 id="mdc-dialog-with-list-label" class="mdc-dialog__header__title">
+  Spawn a new TestRun Instance
+</h2>
+
+<form action="#" method="POST" id="instance-form">
+  {% csrf_token %}
+  <ul class="mdc-list tr-form-list">
+
+    <!-- TestRun Selection -->
+    <li class='mdc-list-item'>
+      <div class="mdc-form-field mdc-form-field--align-end">
+        {{ form.testrun|attr:"class:mdc-select" }}
+        <label for="{{field.name}}">
+          {{ form.testrun.label }}{{ form.label_suffix}}
+        </label>
+      </div>
+      <span class="mdc-list-item__end-detail">
+        <a  href="#"
+            role="button"
+            class="material-icons"
+            aria-label="Add"
+            id="tr-form-show">
+          <i class="material-icons">add</i>
+        </a>
+      </span>
+    </li>
+
+    <!-- Interface Selection -->
+    <li class='mdc-list-item'>
+      <div class="mdc-form-field mdc-form-field--align-end">
+        {{ form.interface|attr:"class:mdc-select" }}
+        <label for="{{field.name}}">
+          {{ form.interface.label }}{{ form.label_suffix}}
+        </label>
+      </div>
+    </li>
+
+    <!-- Environment Selection -->
+    <li class='mdc-list-item'>
+      <div class="mdc-form-field mdc-form-field--align-end">
+        {{ form.environment|attr:"class:mdc-select" }}
+        <label for="{{field.name}}">
+          {{ form.environment.label }}{{ form.label_suffix}}
+        </label>
+      </div>
+      <a  href="#"
+          role="button"
+          class="mdc-list-item__end-detail material-icons"
+          aria-label="Edit">
+        <i class="material-icons">add</i>
+      </a>
+    </li>
+
+    <li class='mdc-list-item'>
+      <div class="mdc-form-field">
+        <button type="submit" class="mdc-button mdc-button--raised mdc-button--primary">
+          Go
+        </button>
+      </div>
+    </li>
+  </ul>
+</form>
+{% endif %}
+
+{% if trform %}
+<!-- Dialog window for adding a new TestRun -->
+<aside id="mdc-dialog-with-list"
+  class="mdc-dialog"
+  role="alertdialog"
+  aria-labelledby="mdc-dialog-with-list-label"
+  aria-describedby="mdc-dialog-with-list-description">
+  <div class="mdc-dialog__surface">
+    <header class="mdc-dialog__header">
+      <h2 id="mdc-dialog-with-list-label" class="mdc-dialog__header__title">
+        Create a Test Run
+      </h2>
+    </header>
+    <form action="/create_testrun/" method="POST" name="create-testrun-form" id="create-testrun-form">
+      {% csrf_token %}
+      <section id="mdc-dialog-with-list-description" class="mdc-dialog__body mdc-dialog__body--scrollable">
+       	<ul class="mdc-list">
+          <li class='mdc-list-item'>
+            <div class="mdc-textfield mdc-textfield--fullwidth mdc-textfield--upgraded" data-demo-no-auto-js="">
+              {{ trform.name|attr:"class:mdc-textfield__input"|attr:"placeholder:Name"|attr:"aria-label:Name" }}
+            </div>
+          </li>
+          <li class='mdc-list-item'>
+            <div class="mdc-textfield mdc-textfield--fullwidth mdc-textfield--upgraded" data-demo-no-auto-js="">
+              {{ trform.description|attr:"class:mdc-textfield__input"|attr:"placeholder:Description"|attr:"aria-label:Description" }}
+            </div>
+          </li>
+        </ul>
+
+        <!-- Multi-select for selecting tests to be executed -->
+        <section class="tr-multi-select__section">
+          <h3 class="mdc-typography--subheading2">
+            Select test modules for execution:
+          </h3>
+          <div class="mdc-form-field mdc-form-field--align-end">
+            <select multiple size="10" class="mdc-multi-select mdc-list" id="id__modules" name="_modules">
+              {% with files=files template="testrunner/module_mselect.html" %}
+                {% include template %}
+              {% endwith %}
+            </select>
+            {{ trform.modules }}
+          </div>
+        </section>
+
+      <footer class="mdc-dialog__footer">
+        <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+        <button type="submit" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Submit</button>
+      </footer>
+    </form>
+  </div>
+  <div class="mdc-dialog__backdrop"></div>
+</aside>
+{% endif %}
+{% endblock %}
+
+<!-- Block for displaying the previous test-runs -->
+{% block display %}
+
+  <header>
+    <h2 class="mdc-dialog__header__title">
+      Previous Results
+    </h2>
+  </header>
+  <section>
+    <ul class="mdc-list bordered-list">
+      {% for run in testruns %}
+      <li class="mdc-list-item">{{ run.id }} {{ run.testrun.name }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% for key, value in files.items %}
+  {% if value.items %}
+    <optgroup class="mdc-list-group" label="{{ key }}">
+      {% with files=value template="testrunner/module_mselect.html" %}
+        {% include template %}
+      {% endwith %}
+    </optgroup>
+  {% else %}
+    <option value="{{ key }}" class="mdc-list-item">
+        {{ key }}
+    </option>
+  {% endif %}
+{% endfor %}

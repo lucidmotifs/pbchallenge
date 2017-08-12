@@ -14,40 +14,49 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-      <style type="text/css">
-        .mdc-temporary-drawer__header {
-          text-transform: uppercase;
-          padding-left: 16px;
-        }
+    <style type="text/css">
+      .mdc-temporary-drawer__header {
+        text-transform: uppercase;
+        padding-left: 16px;
+      }
 
-        .bordered-list {
-          /* remove the side padding. we'll be placing it around the item instead. */
-          padding-right: 0;
-          padding-left: 0;
-        }
-        .bordered-list .mdc-list-item {
-          /* Add the list side padding padding to the list item. */
-          padding: 0 16px;
-          /* Add a border around each element. */
-          border: 1px solid rgba(0, 0, 0, .12);
-        }
-        /* Ensure adjacent borders don't collide with one another. */
-        .bordered-list .mdc-list-item:not(:first-child) {
-          border-top: none;
-        }
+      .bordered-list {
+        /* remove the side padding. we'll be placing it around the item instead. */
+        padding-right: 0;
+        padding-left: 0;
+      }
+      .bordered-list .mdc-list-item {
+        /* Add the list side padding padding to the list item. */
+        padding: 0 16px;
+        /* Add a border around each element. */
+        border: 1px solid rgba(0, 0, 0, .12);
+      }
+      /* Ensure adjacent borders don't collide with one another. */
+      .bordered-list .mdc-list-item:not(:first-child) {
+        border-top: none;
+      }
 
-        .tr-details-card {
-          margin-top: 20px;
-        }
+      .tr-details-card {
+        margin-top: 20px;
+      }
 
-        .tr-form-list {
-          max-width: 428px;
-        }
+      .tr-form-list {
+        max-width: 428px;
+      }
 
-        .tr-form-list label {
-          min-width: 120px;
-        }
-      </style>
+      .tr-form-list label {
+        min-width: 120px;
+      }
+
+      .tr-multi-select__section {
+        margin:30px;
+        padding:5px;
+      }
+
+      .mdc-dialog__body {
+        min-height: 400px;
+      }
+    </style>
   </head>
   <body>
     <!-- Simple Header with title -->
@@ -95,7 +104,11 @@
 
       <div class="mdc-card tr-form-card">
         <section class="mdc-card__primary">
+          {% block errors %}
+          {% endblock %}
           {% block content %}
+          {% endblock %}
+          {% block dotestrun %}
           {% endblock %}
         </section>
       </div>
@@ -115,22 +128,58 @@
       // script to show the navigation drawer
       let drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-temporary-drawer'));
       document.querySelector('.menu-show').addEventListener('click', () => drawer.open = true);
+
+      var file_selector = document.querySelector('#id__modules').addEventListener('change', function(evt) {
+        var sel = document.querySelector('#id_modules');
+        var el = evt.currentTarget;
+
+        for (var i = 0; i < el.options.length; i++) {
+          // get the corresponding element form the real
+          // modules element
+          opt_a = sel.options[i];
+          opt_b = el.options[i];
+
+          // every element in the first select triggers the second\
+          // to be selected
+          if (opt_b.selected) {
+            opt_a.selected = true;
+          }
+        }
+      });
     </script>
     <script>
-    var dialog = new mdc.dialog.MDCDialog(document.querySelector('#mdc-dialog-with-list'));
+      // the create test run dialog window
+      let dialog = new mdc.dialog.MDCDialog(document.querySelector('#mdc-dialog-with-list'));
 
-    dialog.listen('MDCDialog:accept', function() {
-      console.log('accepted');
-    })
+      dialog.listen('MDCDialog:accept', function() {
+        console.log('accepted');
 
-    dialog.listen('MDCDialog:cancel', function() {
-      console.log('canceled');
-    })
+        // submit the form
+        var the_form = document.querySelector('#create-testrun-form');
+        the_form.submit();
+      });
 
-    document.querySelector('#tr-form-show').addEventListener('click', function (evt) {
-      dialog.lastFocusedTarget = evt.target;
-      dialog.show();
-    })
+      dialog.listen('MDCDialog:cancel', function() {
+        console.log('canceled');
+      });
+    </script>
+    <script>
+      document.querySelector('#tr-form-show').addEventListener('click', function (evt) {
+        dialog.lastFocusedTarget = evt.target;
+        dialog.show();
+      })
+    </script>
+    <script>
+    function do_post() {
+      console.log(document.querySelector('#id_test-module').value)
+    }
+
+    document.querySelector('#test-exec-start').addEventListener('click', function (evt) {
+      evt.preventDefault();
+      console.log("test exec form submitted!");  // sanity check
+      // post the test module
+      do_post();
+    });
     </script>
   </body>
 </html>

@@ -1,0 +1,17 @@
+<!-- Block for displaying the previous test-runs -->
+{% block display %}
+
+  <header>
+    <h2 class="mdc-dialog__header__title">
+      Test Modules
+    </h2>
+  </header>
+  <section>
+    <ul class="mdc-list bordered-list">
+      {% for m in modules %}
+      <li class="mdc-list-item">{{ m.id }} {{ m.path }}</li>
+      {% endfor %}
+    </ul>
+  </section
+
+{% endblock %}
