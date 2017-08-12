@@ -17,6 +17,9 @@ RESULT_CHOICES = (
 class TestEnvironment(models.Model):
     host = models.CharField(max_length=100, default='localhost')
 
+    class Meta:
+        app_label = "testrunner"
+
     def __str__(self):
         return "id: {}, host: {}".format(self.id, self.host)
 
@@ -24,6 +27,9 @@ class TestEnvironment(models.Model):
 class TestModule(models.Model):
     """ A reference to a file that contains one or more tests and exists
     the specified testing directory. """
+
+    class Meta:
+        app_label = "testrunner"
 
     path = models.CharField(max_length=100)
 
@@ -37,9 +43,12 @@ class TestRun(models.Model):
     A model to be used as a launch point to create a testrun instance.
     """
 
+    class Meta:
+        app_label = "testrunner"
+
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=200, null=True)
-    modules = models.ManyToManyField(TestModule)
+    modules = models.ManyToManyField(TestModule, blank=False)
 
     """
     The below attributes should only be set by the system after a child
@@ -71,7 +80,10 @@ class TestRun(models.Model):
 
 
 class TestRunInstance(models.Model):
-    """ Instance of a TestRun that has or will be executed """
+    """
+    Instance of a TestRun that has or will be executed
+    """
+
     requested_by = models.ForeignKey('auth.User', blank=True, null=True)
 
     testrun = models.ForeignKey(TestRun)
@@ -93,11 +105,16 @@ class TestRunInstance(models.Model):
     created_on = models.DateTimeField(default=datetime.now)
 
     class Meta:
+        app_label = "testrunner"
         ordering = ('-created_on', 'executed_on')
 
 
 class Template(models.Model):
     """ A collection of tests. When attached to a TestRun, adds each Test
     individually. Exists for convenience """
+
+    class Meta:
+        app_label = "testrunner"
+
     label = models.CharField(max_length=40, unique=True, null=False)
     modules = models.ManyToManyField(TestModule)
