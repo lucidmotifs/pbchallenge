@@ -1,7 +1,7 @@
 # pbchallenge
 
 
-## Requiremnts and Instructions
+## Requirements and Instructions
 
 Use the included virtualenv (env) or create your own with python3.
 
