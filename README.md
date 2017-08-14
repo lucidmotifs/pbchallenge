@@ -23,5 +23,5 @@ $ python manage.py createsuperuser
 
 or use:
 
-profitbrick
+profitbricks
 profit1234
