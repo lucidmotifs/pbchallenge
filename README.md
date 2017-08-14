@@ -9,6 +9,7 @@ Then run:
 
 - $ pip install django
 - $ pip install djangorestframework
+- $ pip install django-widget-teaks
 
 Then run the dev server with:
 
