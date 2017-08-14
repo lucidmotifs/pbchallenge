@@ -1,0 +1,19 @@
+<header>
+  <h2 class="mdc-dialog__header__title">
+    Previous Results
+  </h2>
+</header>
+<section>
+  <ul class="mdc-list bordered-list">
+    {% for run in testruns %}
+    <li class="mdc-list-item" id="list-previous-instances">
+      <a href="{% url 'display-instance' run.id %}">{{ run.id }}</a>
+      <span>{{ run.requested_by.name }}</span>
+      <span>{{ run.created_on }}</span>
+      <span>{{ run.environment.id }}</span>
+      <span>{{ run.testrun.name }}</span>
+      <span>{% if run.result %} {{run.result}} {% else %} Never Run {% endif %}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

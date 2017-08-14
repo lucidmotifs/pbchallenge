@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load widget_tweaks %}
+
+{% block pagetitle %}
+TestRunner Application
+{% endblock %}
+
+{% block testrun %}
+{% if testrun_current %}
+  {% include "testrunner/run_instance.html" with testrun_current=testrun_current modules=modules %}
+{% endif %}
+{% endblock %}
+
+<!-- Block for displaying the previous test-runs -->
+{% block display %}
+
+{% include "testrunner/previous.html" with testruns=testruns %}
+
+{% endblock %}

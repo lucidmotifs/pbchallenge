@@ -1,3 +1,6 @@
+import json, os, re
+from datetime import datetime
+
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -23,10 +26,53 @@ from testrunner.serializers import TestEnvironmentSerializer
 from testrunner.serializers import UserSerializer
 
 # forms
-from testrunner.forms import TestRunInstanceForm, TestRunForm
+from testrunner.forms import TestRunInstanceForm, TestRunForm, TestEnvironmentForm
 
 # utlities
-from testrunner.helpers import create_hierarchy, get_test_modules
+from testrunner.helpers import create_hierarchy, get_test_modules, execute_test_django
+
+
+# views
+@login_required
+def execute_test_ajax(request):
+    """
+    This view is designed to take a POST request and return a
+    JSON response after executing the posted test module.
+    """
+    if request.method == 'POST':
+        module_id = request.POST.get('m_id')
+
+        # the dictionary to be JSON encoded
+        response_data = {}
+
+        # use the posted ID to pull the test module
+        module = TestModule.objects.filter(id=module_id)[0]
+
+        # send the path to the helper that actually runs the test
+
+        response_data['output'] = execute_test_django(module.path)
+        response_data['pk'] = module.id
+        response_data['path'] = module.path
+
+        # find the result. a single fail means the run fails
+        output = response_data['output']
+        # find all before the first newline
+        m = re.search(r"(FAILED|ERROR)", output, re.M)
+        if m:
+            response_data['result'] = 'FAILED'
+        else:
+            response_data['result'] = 'PASSED'
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({"error": "error"}),
+            content_type="application/json"
+        )
+
 
 @login_required
 def display_modules(request):
@@ -36,11 +82,11 @@ def display_modules(request):
     protected and added to a control panel in prod. This code
     would move to a utlities module.
     """
-    TestModule.objects.all().delete()
+    #TestModule.objects.all().delete()
     # create the list to hold the TestModule list
     module_l = list()
     # get a list of test modules
-    _tmodules = get_test_modules('/Users/paulcooper/Documents/GitHub/pbchallenge/testrunner/tests/')
+    _tmodules = get_test_modules('testrunner/tests/')
     for m in _tmodules:
         module_l.append(TestModule(path=m))
 
@@ -56,7 +102,49 @@ def display_modules(request):
 
     return render(request, template, context)
 
-# views
+@login_required
+def display_testruni(request, pk):
+    """
+    Display and run a single testrun instance.
+    """
+    context = {}
+    template = 'testrunner/display_testruni.html'
+
+    # create queryset to hold all current testrun instances
+    testrun_instance = TestRunInstance.objects.filter(id=pk)[0]
+    modules = testrun_instance.testrun.modules.all()
+
+    if request.method == 'POST':
+        # updated the model with the test run result
+        testrun_instance.output = request.POST.get('instance_output')
+        testrun_instance.executed_on = datetime.now()
+
+        # iterate through the attached modules and check their
+        # result. If one fails, the run fails
+        mids = list()
+        for m in modules:
+            field_id = "test-module--{}".format(m.id)
+            mids.append(m.id)
+            if request.POST.get(field_id) == 'FAILED':
+                # break out, as a single failure means the run fails
+                testrun_instance.result = 'FAILED'
+                break
+            else:
+                testrun_instance.result = 'PASSED'
+        context.update({'mids':mids})
+        testrun_instance.save()
+
+    # create queryset to hold all current testrun instances
+    testruns = TestRunInstance.objects.all()
+
+    context.update({
+        'testrun_current': testrun_instance,
+        'modules': modules,
+        'testruns': testruns,
+    })
+
+    return render(request, template, context)
+
 @login_required
 def create_testrun(request):
     """
@@ -67,13 +155,11 @@ def create_testrun(request):
         testrun_form = TestRunForm(request.POST)
 
         # replace file name with pk of module
-
-
         if testrun_form.is_valid():
             form = testrun_form.save(commit=False)
             form.created_by = request.user
             form.save()
-            testrun_form.save_m2m()            
+            testrun_form.save_m2m()
 
             # get the last entered TestRun
             added = TestRun.objects.latest('id')
@@ -100,6 +186,8 @@ def create_instance(request):
     """
     Create and run an instance of a TestRun, or create a new TestRun
     first and then run an instance.
+
+    Also, display previous test run results.
     """
     context = {}
     template = 'testrunner/create_instance.html'
@@ -107,9 +195,11 @@ def create_instance(request):
     # create queryset to hold all current testrun instances
     testruns = TestRunInstance.objects.all()
 
+    # instance of the TestEnvironmentForm for our modal
+    testenv_form = TestEnvironmentForm(request.POST)
+
     # generate the test modules hierarchy
-    tmodules = get_test_modules(
-        '/Users/paulcooper/Documents/GitHub/pbchallenge/testrunner/tests')
+    tmodules = get_test_modules('testrunner/tests')
 
     # build a nested dictionary hierarchy of the filesystem
     fs_hierarchy = create_hierarchy(tmodules)
@@ -127,10 +217,10 @@ def create_instance(request):
             # TODO more defensive coding
             # pull the last entered instance
             testrun_instance = TestRunInstance.objects.latest('id')
-            first_module = testrun_instance.testrun.modules.all()[0]
+            modules = testrun_instance.testrun.modules.all()
             context.update({
                 'testrun_current':testrun_instance,
-                'first_module':first_module
+                'modules':modules,
             })
     else:
         # set the initial to the passed in GET var, or just 0
@@ -145,6 +235,7 @@ def create_instance(request):
         context.update({
             'form': instance_form,
             'trform': testrun_form,
+            'teform': testenv_form,
         })
 
     context.update({
@@ -229,11 +320,13 @@ class TestRunDetail(APIView):
 class TestEnvironmentList(generics.ListCreateAPIView):
     queryset = TestEnvironment.objects.all()
     serializer_class = TestEnvironmentSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 class TestEnvironmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = TestEnvironment.objects.all()
     serializer_class = TestEnvironmentSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 class TestRunInstanceList(generics.ListCreateAPIView):

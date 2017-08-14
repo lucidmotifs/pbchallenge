@@ -1,0 +1,146 @@
+<section id="test-execution-section">
+  <h3 class="mdc-typography--headline">
+    Executing instance of: {{ testrun_current.testrun.name }}
+  </h3>
+  <span id="errors" style="color:red"></span>
+  <h2 class="mdc-typography--title">
+    <button class="mdc-fab mdc-fab--mini mdc-fab--plain material-icons" aria-label="Execute" data-mdc-auto-init="MDCRipple" id="test-exec-start">
+      <span class="mdc-fab__icon">
+        play_circle_outline
+      </span>
+    </button>
+    <span class="mdc-typography--caption">
+      Click to run tests
+    </span>
+  </h2>
+  <pre id="test-exec-output" style="display:none"></pre>
+  <!-- hidden form for handling AJAX submission to test executor -->
+  <form action="/run/{{ testrun_current.id }}/" method="POST" id="test-exec-form">
+    {% csrf_token %}
+    {% for mod in modules %}
+    <input type="hidden" id="id_test-module--{{mod.id}}" name="test-module--{{mod.id}}" value="{{ mod.id }}">
+    {% endfor %}
+  </form>
+
+  <h4 class="mdc-typography--subheading1">Environment:
+    <span id="env_id">{{ testrun_current.environment.id }}</span>
+  </h4>
+
+  <!-- modules list -->
+  <ul class="mdc-list mdc-list--dense" style="max-width:400px">
+    {% for mod in modules %}
+    <li class="mdc-list-item" id="test-module--{{mod.id}}">
+      {{ mod.path }}
+      <span class="mdc-list-item__end-detail" id="test-module_span--{{mod.id}}">
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if testrun_current.result %}
+  <h4 class="mdc-typography--subheading1">Result: {{testrun_current.result}}</h4>
+  {% endif %}
+
+  {% if testrun_current.output %}
+  <h4 class="mdc-typography--subheading1">Output: </h4>
+  <pre>{{ testrun_current.output }}</pre>
+  {% endif %}
+</section>
+
+<script>
+//for each input in the hidden form, do an ajax post and run
+// the module
+var els = document.querySelector('#test-exec-form').children;
+var jobs = els.length;
+
+// post a test module to the execution page
+function do_post(id) {
+  console.log("posting test...");
+
+  var curr_item_detail = $("#test-module_span--" + id);
+  $(curr_item_detail).html("working...");
+
+  $.ajax({
+    // endpoint
+    url : "/api/exec_test/",
+    type : "POST",
+    // data sent with the post request
+    data : { m_id : id },
+
+    // handle a successful response
+    success : function(json) {
+        $('#id_test-module').val(''); // remove the value from the input
+        // log the returned json to the console
+        console.log(json);
+        console.log("success");
+
+        // update output
+        $('#test-exec-output').append(json['output']);
+        $(curr_item_detail).html(json['result']);
+
+        $("#id_test-module--"+json['pk']).val(json['result']);
+        alert($("#id_test-module--"+json['pk']).val());
+        // minus from remaining jobs
+        jobs = jobs - 1;
+        // if no more jobs, submit results form --- account for csrf token
+        if (jobs == 1) {
+          // create input for output
+          var output_field = $('<input></input>').attr('type', 'hidden').attr('id', 'id_instance_output').attr('name', 'instance_output');
+          output_field.val($('#test-exec-output').html());
+          $('#test-exec-form').append(output_field);
+          alert('submitting');
+
+          $('#test-exec-form').submit();
+        }
+    },
+
+    // may not need, TODO remove
+    complete : function(json) {
+      return true
+    },
+
+    // handle a non-successful response
+    error : function(xhr,errmsg,err) {
+        $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+            " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+        console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+    }
+  });
+}
+
+function check_env_state() {
+  var env_state = 'inuse';
+  // send get request to api/envs/<the val of id_environment>
+  $.ajax({
+    // endpoint
+    url : "/api/envs/"+$('#env_id').html()+"/",
+    type : "GET",
+    // handle a successful response
+    success : function(json) {
+      console.log(json);
+      // read the value of json['state']
+      env_state = json['state'];
+      alert(env_state);
+
+      if (env_state == "inuse") {
+        $('#errors').append("This environment is currently in use!");
+      } else {
+        // run tests
+        for (var i = 1; i <= jobs; i++) {
+          do_post(els[i].value);
+        }
+      }
+    },
+  });
+}
+
+// button that initiates the test execution loop
+document.querySelector('#test-exec-start').addEventListener('click', function (evt) {
+  evt.preventDefault();
+  console.log("test exec form submitted!");  // sanity check
+
+  // check the state is in if in use return form error
+  // almost runs test - bad design, should be seperated.
+  check_env_state();
+});
+</script>

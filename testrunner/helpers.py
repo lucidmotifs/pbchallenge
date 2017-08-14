@@ -3,8 +3,51 @@ Helper functions for the views that require extra logic like parsing
 directories or running tests.
 """
 
-import os
-import unittest
+import os, subprocess
+
+# the test directory relative to where our web app runs from
+# this would be an absolute directory were we not using django tests
+# and if this app didn't need to be portable (while it has not config)
+TESTS_DIR = 'testrunner/tests/'
+# used for unittest execution
+TESTS_DIR_ABS = '/Users/paulcooper/Documents/GitHub/pbchallenge/testrunner/tests'
+TESTING_COMMAND = ['./manage.py', 'test']
+
+def execute_test_django(test_path):
+    """
+    Execute a given test in a way that is compatible with Django,
+    which is different because django must set-up its own DB and
+    configure its settings.
+    """
+    # remove the leading './' if exists
+    if test_path.startswith('./') or test_path.startswith('.\\'):
+        # remove the first 2 chars
+        test_path = test_path[2:]
+
+    # remove .py at the end, if its found
+    if test_path.endswith('.py'):
+        test_path = test_path[:-3]
+
+    # attached the TEST_DIR to the path
+    test_path = "{}{}".format(TESTS_DIR, test_path)
+
+    # turn the path into a python module string
+    test_module = test_path.replace(os.sep, '.')
+
+    # add test module to the command
+    command = TESTING_COMMAND + [test_module,]
+    #command.append('2>')
+    #command.append('output.txt')
+
+    # start a subprocess and store output
+    # the env var passed is so that the output from subprocess
+    # is not truncated
+    p = subprocess.run(command, \
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
+    #result,err = p.communicate()
+
+    # actual test result output is always in stderr, stdout is just info
+    return p.stderr
 
 
 def get_test_modules(root_dir):
@@ -23,7 +66,9 @@ def get_test_modules(root_dir):
         # traverse the given directory
         for root, dir, files in os.walk('.'):
             # loads all test modules into a list
-            modules += ["{}{}{}".format(root,os.sep,f) for f in files if f.startswith("test_")]
+            modules += ["{}{}{}".format(root,os.sep,f) \
+                for f in files if f.startswith("test_") \
+                               and not f.endswith(".pyc")]
 
         # return to the original dir
         os.chdir(cwd)

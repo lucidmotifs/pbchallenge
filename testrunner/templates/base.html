@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>TestRunner App</title>
-
+    <!-- jQuery library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <!-- Material Design Styles -->
     <link
       rel="stylesheet"
@@ -54,7 +55,15 @@
       }
 
       .mdc-dialog__body {
-        min-height: 400px;
+        min-height: 460px;
+      }
+
+      #mdc-dialog-for-tenvf .mdc-dialog__body {
+        min-height:200px;
+      }
+
+      #list-previous-instances span {
+        margin:0 10px;
       }
     </style>
   </head>
@@ -85,7 +94,7 @@
           </div>
         </header>
         <nav id="icon-with-text-demo" class="mdc-temporary-drawer__content mdc-list">
-          <a class="mdc-list-item mdc-temporary-drawer--selected" href="#">
+          <a class="mdc-list-item mdc-temporary-drawer--selected" href="/">
             <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">inbox</i>
             Create and Run
           </a>
@@ -108,7 +117,7 @@
           {% endblock %}
           {% block content %}
           {% endblock %}
-          {% block dotestrun %}
+          {% block testrun %}
           {% endblock %}
         </section>
       </div>
@@ -120,66 +129,20 @@
         </section>
       </div>
     </main>
-
     <!-- Include and initialize Google MAterial Design JS components -->
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script>window.mdc.autoInit();</script>
+    <!-- must include tis script for CSRF to work with AJAX requests -->
+    {% load static %}
+    <script src="{% static 'js/django-ajax.js' %}"></script>
     <script>
       // script to show the navigation drawer
       let drawer = new mdc.drawer.MDCTemporaryDrawer(document.querySelector('.mdc-temporary-drawer'));
       document.querySelector('.menu-show').addEventListener('click', () => drawer.open = true);
-
-      var file_selector = document.querySelector('#id__modules').addEventListener('change', function(evt) {
-        var sel = document.querySelector('#id_modules');
-        var el = evt.currentTarget;
-
-        for (var i = 0; i < el.options.length; i++) {
-          // get the corresponding element form the real
-          // modules element
-          opt_a = sel.options[i];
-          opt_b = el.options[i];
-
-          // every element in the first select triggers the second\
-          // to be selected
-          if (opt_b.selected) {
-            opt_a.selected = true;
-          }
-        }
-      });
     </script>
-    <script>
-      // the create test run dialog window
-      let dialog = new mdc.dialog.MDCDialog(document.querySelector('#mdc-dialog-with-list'));
 
-      dialog.listen('MDCDialog:accept', function() {
-        console.log('accepted');
+    {% block modals %}
+    {% endblock %}
 
-        // submit the form
-        var the_form = document.querySelector('#create-testrun-form');
-        the_form.submit();
-      });
-
-      dialog.listen('MDCDialog:cancel', function() {
-        console.log('canceled');
-      });
-    </script>
-    <script>
-      document.querySelector('#tr-form-show').addEventListener('click', function (evt) {
-        dialog.lastFocusedTarget = evt.target;
-        dialog.show();
-      })
-    </script>
-    <script>
-    function do_post() {
-      console.log(document.querySelector('#id_test-module').value)
-    }
-
-    document.querySelector('#test-exec-start').addEventListener('click', function (evt) {
-      evt.preventDefault();
-      console.log("test exec form submitted!");  // sanity check
-      // post the test module
-      do_post();
-    });
-    </script>
   </body>
 </html>

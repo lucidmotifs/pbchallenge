@@ -8,7 +8,9 @@ from testrunner import views
 urlpatterns = [
     url(r'^$', views.create_instance),
     url(r'^create_testrun/', views.create_testrun),
+    url(r'^run/(?P<pk>[0-9]+)/$', views.display_testruni, name="display-instance"),
     url(r'^display_modules/', views.display_modules),
+    url(r'^api/exec_test/', views.execute_test_ajax),
     url(r'^api/testruns/$', views.TestRunList.as_view()),
     url(r'^api/testruns/(?P<pk>[0-9]+)/$', views.TestRunDetail.as_view()),
     url(r'^api/envs/$', views.TestEnvironmentList.as_view()),

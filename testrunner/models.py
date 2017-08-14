@@ -8,14 +8,27 @@ INTERFACE_CHOICES = (
 )
 
 RESULT_CHOICES = (
-    ('pass', 'pass'),
-    ('fail', 'fail'),
-    ('error', 'error'),
+    ('PASSED', 'PASSED'),
+    ('FAILED', 'FAILED'),
+    ('ERROR', 'ERROR'),
+)
+
+STATUS_CHOICES = (
+    ('stopped', 'stopped'),
+    ('running', 'running'),
+)
+
+STATE_CHOICES = (
+    ('idle', 'idle'),
+    ('inuse', 'inuse'),
 )
 
 # Create your models here.
 class TestEnvironment(models.Model):
     host = models.CharField(max_length=100, default='localhost')
+    state = models.CharField(   choices=STATE_CHOICES,
+                                max_length=20,
+                                default='idle')
 
     class Meta:
         app_label = "testrunner"
@@ -31,11 +44,11 @@ class TestModule(models.Model):
     class Meta:
         app_label = "testrunner"
 
-    path = models.CharField(max_length=100)
+    path = models.CharField(max_length=100, unique=True)
 
-    result = models.CharField(  choices=RESULT_CHOICES,
-                                max_length=20,
-                                null=True )
+    last_result = models.CharField(  choices=RESULT_CHOICES,
+                                     max_length=20,
+                                     null=True )
 
 
 class TestRun(models.Model):
@@ -88,6 +101,10 @@ class TestRunInstance(models.Model):
 
     testrun = models.ForeignKey(TestRun)
 
+    status = models.CharField(  choices=STATUS_CHOICES,
+                                default="stopped",
+                                max_length=20 )
+
     interface = models.CharField( choices=INTERFACE_CHOICES,
                                   default='ssh',
                                   max_length=20 )
@@ -98,7 +115,7 @@ class TestRunInstance(models.Model):
                                 max_length=20,
                                 null=True )
 
-    output = models.CharField(max_length=255, null=True)
+    output = models.CharField(max_length=65000, null=True)
 
     executed_on = models.DateTimeField(null=True)
 
