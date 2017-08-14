@@ -22,11 +22,15 @@
     {% endfor %}
   </form>
 
+  <h4 class="mdc-typography--subheading1">Requestor:
+    <span>{{ testrun_current.requested_by.username }}</span>
+  </h4>
   <h4 class="mdc-typography--subheading1">Environment:
     <span id="env_id">{{ testrun_current.environment.id }}</span>
   </h4>
 
   <!-- modules list -->
+  <h4 class="mdc-typography--subheading1">Test Modules:</h4>
   <ul class="mdc-list mdc-list--dense" style="max-width:400px">
     {% for mod in modules %}
     <li class="mdc-list-item" id="test-module--{{mod.id}}">
@@ -50,7 +54,7 @@
 <script>
 //for each input in the hidden form, do an ajax post and run
 // the module
-var els = document.querySelector('#test-exec-form').children;
+let els = document.querySelector('#test-exec-form').children;
 var jobs = els.length;
 
 // post a test module to the execution page
@@ -65,7 +69,7 @@ function do_post(id) {
     url : "/api/exec_test/",
     type : "POST",
     // data sent with the post request
-    data : { m_id : id },
+    data : { m_id : id, run_id : {{testrun_current.id}} },
 
     // handle a successful response
     success : function(json) {
@@ -123,10 +127,10 @@ function check_env_state() {
       alert(env_state);
 
       if (env_state == "inuse") {
-        $('#errors').append("This environment is currently in use!");
+        $('#errors').html("This environment is currently in use!");
       } else {
         // run tests
-        for (var i = 1; i <= jobs; i++) {
+        for (var i = 1; i < jobs; i++) {
           do_post(els[i].value);
         }
       }

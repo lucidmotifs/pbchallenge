@@ -1,0 +1,29 @@
+<!-- Dialog window for showing test output -->
+<aside id="mdc-dialog-for-output"
+  class="mdc-dialog"
+  role="alertdialog"
+  aria-labelledby="mdc-dialog-for-output-header"
+  aria-describedby="mdc-dialog-for-output-body">
+  <div class="mdc-dialog__surface">
+    <header class="mdc-dialog__header">
+      <h2 id="mdc-dialog-for-output-header" class="mdc-dialog__header__title">
+        Most Recent Output
+      </h2>
+    </header>
+    <section id="mdc-dialog-for-output-body" class="mdc-dialog__body mdc-dialog__body-scrollable" style="overflow:scroll;">
+      <pre id="test-output-display" style="padding:20px;"></pre>
+    <section>
+    <footer class="mdc-dialog__footer">
+      <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+      <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Submit</button>
+    </footer>
+    </form>
+  </div>
+  <div class="mdc-dialog__backdrop"></div>
+</aside>
+
+<script>
+  // the create test run dialog window
+  let dialog_ouput = new mdc.dialog.MDCDialog(document.querySelector('#mdc-dialog-for-output'));
+
+</script>

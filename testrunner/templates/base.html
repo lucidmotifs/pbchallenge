@@ -7,6 +7,8 @@
     <title>TestRunner App</title>
     <!-- jQuery library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Include and initialize Google MAterial Design JS components -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <!-- Material Design Styles -->
     <link
       rel="stylesheet"
@@ -56,6 +58,7 @@
 
       .mdc-dialog__body {
         min-height: 460px;
+        max-height: 600px;
       }
 
       #mdc-dialog-for-tenvf .mdc-dialog__body {
@@ -64,6 +67,38 @@
 
       #list-previous-instances span {
         margin:0 10px;
+      }
+
+      .mdc-list-item span {
+        display: inline-block;
+      }
+
+      .prev-list-col-1 {
+        min-width: 28px;
+      }
+
+      .prev-list-col-2 {
+        min-width: 120px;
+      }
+
+      .prev-list-col-3 {
+        min-width: 200px;
+      }
+
+      .prev-list-col-4 {
+        min-width: 140px;
+      }
+
+      .prev-list-col-5 {
+        min-width: 120px;
+      }
+
+      .prev-list-col-6 {
+        min-width: 100px;
+      }
+
+      .prev-list-titles {
+        padding-left: 8px;
       }
     </style>
   </head>
@@ -93,14 +128,33 @@
             Navigation
           </div>
         </header>
-        <nav id="icon-with-text-demo" class="mdc-temporary-drawer__content mdc-list">
+        <nav class="mdc-temporary-drawer__content mdc-list">
           <a class="mdc-list-item mdc-temporary-drawer--selected" href="/">
             <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">inbox</i>
-            Create and Run
+            App Home
           </a>
-          <a class="mdc-list-item" href="#">
+        </nav>
+        <header class="mdc-temporary-drawer__header">
+          <div class="mdc-temporary-drawer__header-content">
+            API
+          </div>
+        </header>
+        <nav class="mdc-temporary-drawer__content mdc-list">
+          <a class="mdc-list-item" href="{% url 'api-testruns' %}">
             <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">star</i>
-            Results
+            Test Runs
+          </a>
+          <a class="mdc-list-item" href="{% url 'api-envs' %}">
+            <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">star</i>
+            Environments
+          </a>
+          <a class="mdc-list-item" href="{% url 'api-instances' %}">
+            <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">star</i>
+            Instances
+          </a>
+          <a class="mdc-list-item" href="{% url 'api-users' %}">
+            <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">star</i>
+            Users
           </a>
         </nav>
       </nav>
@@ -129,8 +183,6 @@
         </section>
       </div>
     </main>
-    <!-- Include and initialize Google MAterial Design JS components -->
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script>window.mdc.autoInit();</script>
     <!-- must include tis script for CSRF to work with AJAX requests -->
     {% load static %}

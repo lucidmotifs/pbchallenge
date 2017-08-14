@@ -4,16 +4,67 @@
   </h2>
 </header>
 <section>
-  <ul class="mdc-list bordered-list">
-    {% for run in testruns %}
-    <li class="mdc-list-item" id="list-previous-instances">
-      <a href="{% url 'display-instance' run.id %}">{{ run.id }}</a>
-      <span>{{ run.requested_by.name }}</span>
-      <span>{{ run.created_on }}</span>
-      <span>{{ run.environment.id }}</span>
-      <span>{{ run.testrun.name }}</span>
-      <span>{% if run.result %} {{run.result}} {% else %} Never Run {% endif %}</span>
-    </li>
-    {% endfor %}
-  </ul>
+    <ul class="mdc-list bordered-list">
+      <li class="mdc-list-item">
+          <span class="mdc-grid-tile__title prev-list-col-1" style="min-width:44px;">Id</span>
+          <span class="mdc-grid-tile__title prev-list-col-2" style="min-width:144px;">Requested By</span>
+          <span class="mdc-grid-tile__title prev-list-col-3" style="min-width:224px;">Date </span>
+          <span class="mdc-grid-tile__title prev-list-col-4" style="min-width:164px;">Environment Id</span>
+          <span class="mdc-grid-tile__title prev-list-col-5" style="min-width:144px;">Run Title</span>
+          <span class="mdc-grid-tile__title prev-list-col-6">Result</span>
+      </li>
+      {% for run in testruns %}
+      <li class="mdc-list-item" id="list-previous-instances">
+        <span class="prev-list-col-1"><a href="{% url 'display-instance' run.id %}">{{ run.id }}</a>
+        <span class="prev-list-col-2">{{ run.requested_by.username }}</span>
+        <span class="prev-list-col-3">{{ run.executed_on }}</span>
+        <span class="prev-list-col-4">{{ run.environment.id }}</span>
+        <span class="prev-list-col-5">{{ run.testrun.name }}</span>
+        <span class="prev-list-col-6">{% if run.result %} {{run.result}} {% else %} Never Run {% endif %}</span>
+        <span class="prev-list-col-7">
+          {% if run.output %} <a href="#" id="show-output-{{ run.id }}" onclick="load_output({{run.id}});">output</a> {% else %} Never Run {% endif %}
+        </span>
+        <span class="prev-list-col-8">
+          {% if run.result %} <a href="#" id="show-logs-{{ run.id }}" onclick="load_logs({{run.id}});">logs</a> {% else %} Never Run {% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
 </section>
+
+
+{% include "testrunner/modals/testoutput.html" with trform=trform files=files %}
+{% include "testrunner/modals/testlogs.html" with teform=teform %}
+
+<script>
+function load_output(id) {
+  $.ajax({
+    // endpoint
+    url : "/api/runs/"+id,
+    type : "GET",
+
+    // handle a successful response
+    success : function(json) {
+      console.log(json);
+      $('#test-output-display').html(json['output']);
+      dialog_ouput.show();
+    },
+  });
+};
+
+function load_logs(id) {
+  $.ajax({
+    // endpoint
+    url : "/api/logs/",
+    type : "GET",
+    data : { instance_id : id },
+
+    // handle a successful response
+    success : function(json) {
+      console.log(json);
+      $('#test-logs-display').html(json['logs_content']);
+      dialog_logs.show();
+    },
+  });
+};
+</script>

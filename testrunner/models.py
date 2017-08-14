@@ -128,7 +128,7 @@ class TestRunInstance(models.Model):
 
 class Template(models.Model):
     """ A collection of tests. When attached to a TestRun, adds each Test
-    individually. Exists for convenience """
+    individually."""
 
     class Meta:
         app_label = "testrunner"

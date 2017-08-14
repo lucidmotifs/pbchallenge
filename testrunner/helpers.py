@@ -6,14 +6,15 @@ directories or running tests.
 import os, subprocess
 
 # the test directory relative to where our web app runs from
-# this would be an absolute directory were we not using django tests
-# and if this app didn't need to be portable (while it has not config)
+# this would be an absolute directory, this is just easier in
+# our controlled dev envinronment
 TESTS_DIR = 'testrunner/tests/'
 # used for unittest execution
 TESTS_DIR_ABS = '/Users/paulcooper/Documents/GitHub/pbchallenge/testrunner/tests'
 TESTING_COMMAND = ['./manage.py', 'test']
 
-def execute_test_django(test_path):
+
+def execute_test_django(test_path, runid):
     """
     Execute a given test in a way that is compatible with Django,
     which is different because django must set-up its own DB and
@@ -40,13 +41,21 @@ def execute_test_django(test_path):
     #command.append('output.txt')
 
     # start a subprocess and store output
-    # the env var passed is so that the output from subprocess
-    # is not truncated
     p = subprocess.run(command, \
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
-    #result,err = p.communicate()
 
-    # actual test result output is always in stderr, stdout is just info
+    logs_dir = "{}logs/{}/".format(TESTS_DIR, runid)
+    # move the created logs to the modules folder
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+
+    # move the logs created
+    src_log = "{}.log".format(test_module)
+    dest_log = "{}{}.log".format(logs_dir, test_module)
+
+    os.rename(src_log, dest_log)
+
+    # test result output is piped to stderr, stdout is other info
     return p.stderr
 
 

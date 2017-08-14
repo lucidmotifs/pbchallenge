@@ -30,17 +30,54 @@ from testrunner.forms import TestRunInstanceForm, TestRunForm, TestEnvironmentFo
 
 # utlities
 from testrunner.helpers import create_hierarchy, get_test_modules, execute_test_django
+from testrunner.helpers import TESTS_DIR
 
+@login_required
+def get_logs(request):
+
+    if request.method == 'GET':
+        iid = request.GET.get('instance_id')
+
+        instance = TestRunInstance.objects.filter(id=iid)[0]
+        response_data = {}
+        response_data['logs_content'] = ""
+        for m in instance.testrun.modules.all():
+            # HACK fix module path at POST
+            m.path = m.path.replace('./', '')
+            dir = "{}logs/{}/".format(TESTS_DIR, iid)
+            filename = "{}{}".format(TESTS_DIR, m.path)
+            # make replacements to match logfile name on disk
+            filename = filename.replace('/', '.')
+            filename = filename.replace('.py', '.log')
+            filename = dir + filename
+            # open log file and return contents
+            with open(filename, 'r') as log_file:
+                response_data['logs_content'] += log_file.read()
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({"error": "error"}),
+            content_type="application/json"
+        )
 
 # views
 @login_required
-def execute_test_ajax(request):
+def execute_test(request):
     """
     This view is designed to take a POST request and return a
     JSON response after executing the posted test module.
+
+    Time allowing, we would put this into an APIView class so the testrunner
+    code doesn't live in helpers.py
     """
     if request.method == 'POST':
+
         module_id = request.POST.get('m_id')
+        instance_id = request.POST.get('run_id')
 
         # the dictionary to be JSON encoded
         response_data = {}
@@ -49,16 +86,16 @@ def execute_test_ajax(request):
         module = TestModule.objects.filter(id=module_id)[0]
 
         # send the path to the helper that actually runs the test
-
-        response_data['output'] = execute_test_django(module.path)
+        response_data['output'] = execute_test_django(module.path, instance_id)
         response_data['pk'] = module.id
         response_data['path'] = module.path
 
         # find the result. a single fail means the run fails
         output = response_data['output']
+
         # find all before the first newline
-        m = re.search(r"(FAILED|ERROR)", output, re.M)
-        if m:
+        m = re.search(r"(.*)\n", output, re.M)
+        if m and ('F' in m.group(1) or 'E' in m.group(1)):
             response_data['result'] = 'FAILED'
         else:
             response_data['result'] = 'PASSED'
@@ -75,7 +112,7 @@ def execute_test_ajax(request):
 
 
 @login_required
-def display_modules(request):
+def update_modules(request):
     """
     This is a temporary method while developing to help
     populate the TestModule DB from a filesystem. It would be
@@ -95,7 +132,7 @@ def display_modules(request):
 
     tmodules = TestModule.objects.all()
 
-    template = "testrunner/display_modules.html"
+    template = "testrunner/update_modules.html"
     context = {
         'modules':tmodules,
     }
