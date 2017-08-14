@@ -7,8 +7,8 @@ Use the included virtualenv (env) or create your own with python3.
 
 Then run:
 
-$ pip install django
-$ pip install djangorestframework
+- $ pip install django
+- $ pip install djangorestframework
 
 Then run the dev server with:
 
