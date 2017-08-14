@@ -9,7 +9,7 @@ Then run:
 
 - $ pip install django
 - $ pip install djangorestframework
-- $ pip install django-widget-teaks
+- $ pip install django-widget-tweaks
 
 Then run the dev server with:
 
